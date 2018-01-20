@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/security
+						 http://www.springframework.org/schema/security/spring-security.xsd">
+
+ <security:global-method-security secured-annotations="enabled" />
+    
+    <bean id="dataSource" 
+  class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+  <property name="driverClassName" value="org.h2.Driver"/>
+   <property name="url" value="jdbc:h2:~/test;AUTO_SERVER=TRUE;"/>
+  <property name="username" value="sa"/>
+  <property name="password" value=""/>
+</bean>
+    
+    <security:http auto-config="true">
+        <!-- Restrict URLs based on role -->
+        
+        <security:intercept-url pattern="/" access="permitAll" />
+        <security:intercept-url pattern="/admin**" access="hasRole('ADMIN')" />
+        <security:intercept-url pattern="/showall" access="hasRole('ADMIN')" />
+        <security:intercept-url pattern="/addcategory" access="hasRole('ADMIN')" />
+        <security:intercept-url pattern="/addproduct" access="hasRole('ADMIN')" />
+        <security:intercept-url pattern="/allcategory" access="hasRole('ADMIN')" />
+       
+        <security:intercept-url pattern="/supplier**" access="hasRole('SUPPLIER')" />
+        <security:intercept-url pattern="/AdminAddProduct" access="hasRole('SUPPLIER')" />
+        <security:intercept-url pattern="/ViewProducts" access="hasRole('SUPPLIER')" />
+        <security:intercept-url pattern="/flows/createItem" access="permitAll" method="POST" /> 
+        
+        <security:form-login  login-page="/signin" 
+        			 username-parameter="email" 
+        			 password-parameter="password" 
+        			 authentication-failure-url="/signin?error=error" default-target-url="/" />
+        
+        
+        
+        
+         <security:csrf disabled="true"/>
+    </security:http>
+
+    <security:authentication-manager>
+       
+        <security:authentication-provider >
+         <security:jdbc-user-service data-source-ref="dataSource"  
+      			users-by-username-query="select email, password, active from user where email=?" 
+          		authorities-by-username-query="select email, role from user where email=? "/>   
+            
+        
+      
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+</beans>
